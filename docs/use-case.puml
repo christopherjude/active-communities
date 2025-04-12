@@ -1,0 +1,70 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+
+actor Visitor
+actor "Registered User" as User
+actor "Cycling Instructor" as Instructor
+actor "Cycling Leader" as Leader
+actor "Experienced Cyclist" as EC
+
+rectangle ActiveCommunities {
+
+    (View Training Info)
+    (Register)
+    (Log In)
+    (Book Training Session)
+    (View Own Bookings)
+    (Leave Review)
+    (View Instructor Profiles)
+    (Edit Profile)
+    (Submit Instructor Application)
+    (View Instructor Applications)
+    (Invite for Interview)
+    (Assign Instructor Role)
+    (Create Instructor Profile)
+    (View Assigned Bookings)
+    (Post Helpful Info)
+    (Create Training Session)
+    (Post Session Info)
+    (View All Bookings)
+    (Respond to Contact Forms)
+    (Review Feedback)
+
+}
+
+' === Actor Use Case Connections ===
+
+' Visitor
+Visitor --> (View Training Info)
+Visitor --> (Register)
+
+' Registered User
+User --> (Log In)
+User --> (Book Training Session)
+User --> (View Own Bookings)
+User --> (Leave Review)
+User --> (View Instructor Profiles)
+User --> (Edit Profile)
+
+' Experienced Cyclist
+EC --> (Submit Instructor Application)
+
+' Instructor
+Instructor --> (Log In)
+Instructor --> (Create Instructor Profile)
+Instructor --> (View Assigned Bookings)
+Instructor --> (Post Helpful Info)
+
+' Leader
+Leader --> (Log In)
+Leader --> (View Instructor Applications)
+Leader --> (Invite for Interview)
+Leader --> (Assign Instructor Role)
+Leader --> (Create Training Session)
+Leader --> (Post Session Info)
+Leader --> (View All Bookings)
+Leader --> (Respond to Contact Forms)
+Leader --> (Review Feedback)
+
+@enduml

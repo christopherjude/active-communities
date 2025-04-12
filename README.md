@@ -1,1 +1,1 @@
-# Active Communities - Cycling# active-communities
+# Active Communities - Cycling

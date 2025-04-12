@@ -1,0 +1,86 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class User {
+  +id: int
+  +name: string
+  +email: string
+  +password: string
+  +login()
+}
+
+class RegisteredUser {
+  +bookSession()
+  +viewOwnBookings()
+  +leaveReview()
+  +editProfile()
+  +viewInstructorProfiles()
+}
+
+class Instructor {
+  +profileBio: string
+  +experience: string
+  +createProfile()
+  +viewAssignedBookings()
+  +postHelpfulInfo()
+}
+
+class Leader {
+  +createTrainingSession()
+  +postSessionInfo()
+  +viewAllBookings()
+  +viewContactForms()
+  +respondToContactForm()
+  +viewInstructorApplications()
+  +inviteForInterview()
+  +assignInstructorRole()
+  +reviewFeedback()
+}
+
+class TrainingSession {
+  +id: int
+  +title: string
+  +date: Date
+  +time: Time
+  +route: string
+  +grade: string
+}
+
+class Booking {
+  +id: int
+  +status: string
+}
+
+class Review {
+  +id: int
+  +rating: int
+  +comment: string
+}
+
+class InstructorApplication {
+  +id: int
+  +status: string
+  +notes: string
+}
+
+class ContactForm {
+  +id: int
+  +message: string
+  +status: string
+}
+
+' Inheritance
+RegisteredUser --|> User
+Instructor --|> User
+Leader --|> User
+
+' Associations
+RegisteredUser "1" --> "many" Booking
+RegisteredUser "1" --> "many" Review
+Instructor "1" --> "many" TrainingSession
+TrainingSession "1" --> "many" Booking
+TrainingSession "1" --> "many" Review
+InstructorApplication "1" --> "1" User
+ContactForm "1" --> "0..1" User
+
+@enduml
