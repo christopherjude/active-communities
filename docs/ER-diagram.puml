@@ -1,0 +1,84 @@
+@startuml
+' Hide circle at the end of relationships
+hide circle
+
+entity "users" as users {
+  *id : INT <<PK>>
+  --
+  name : VARCHAR
+  email : VARCHAR
+  password : VARCHAR
+}
+
+entity "registered_users" as reg_users {
+  *user_id : INT <<PK, FK>>
+}
+
+entity "instructors" as instructors {
+  *user_id : INT <<PK, FK>>
+  profile_bio : TEXT
+  experience : TEXT
+}
+
+entity "leaders" as leaders {
+  *user_id : INT <<PK, FK>>
+}
+
+entity "training_sessions" as sessions {
+  *id : INT <<PK>>
+  --
+  title : VARCHAR
+  date : DATE
+  time : TIME
+  route : VARCHAR
+  grade : VARCHAR
+  created_by : INT <<FK>>
+}
+
+entity "bookings" as bookings {
+  *id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  session_id : INT <<FK>>
+  status : VARCHAR
+}
+
+entity "reviews" as reviews {
+  *id : INT <<PK>>
+  --
+  reviewer_id : INT <<FK>>
+  instructor_id : INT <<FK>>
+  rating : INT
+  comment : TEXT
+}
+
+entity "instructor_applications" as applications {
+  *id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  status : VARCHAR
+  notes : TEXT
+}
+
+entity "contact_forms" as contacts {
+  *id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  message : TEXT
+  status : VARCHAR
+}
+
+' Relationships
+users ||--o{ reg_users : has
+users ||--o{ instructors : has
+users ||--o{ leaders : has
+users ||--o{ applications : applies
+users ||--o{ contacts : submits
+
+leaders ||--o{ sessions : creates
+reg_users ||--o{ bookings : books
+sessions ||--o{ bookings : includes
+
+reg_users ||--o{ reviews : writes
+instructors ||--o{ reviews : receives
+@enduml
