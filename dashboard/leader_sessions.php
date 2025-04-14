@@ -24,11 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute();
 }
 
+// Handle deletion
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_session_id'])) {
+    $delete_id = intval($_POST['delete_session_id']);
+    $conn->prepare("DELETE FROM training_sessions WHERE id = ?")->bind_param("i", $delete_id)->execute();
+}
+
+
 $sessions = $conn->query("
     SELECT ts.*, u.name AS instructor_name
     FROM training_sessions ts
     JOIN users u ON ts.instructor_id = u.id"
-    // WHERE ts.created_by = " . intval($_SESSION['user_id'])
 );
 
 
@@ -57,11 +63,24 @@ $instructors = $conn->query("
             <h3>Sessions</h3>
             <ul class="session-list">
                 <?php while($row = $sessions->fetch_assoc()): ?>
-                    <li>
+                    <?php
+                        $datetime = strtotime($row['date'] . ' ' . $row['time']);
+                        $is_past = $datetime < time();
+                    ?>
+                    <li style="<?php echo $is_past ? 'opacity: 0.6;' : ''; ?>">
                         <strong><?php echo htmlspecialchars($row['title']); ?></strong><br>
                         <?php echo $row['date'] . " at " . substr($row['time'], 0, 5); ?><br>
-                        <small><?php echo htmlspecialchars($row['route']) . " | " . $row['grade']; ?></small>
+                        <small><?php echo htmlspecialchars($row['route']) . " | " . $row['grade']; ?></small><br>
                         <small>Instructor: <?php echo htmlspecialchars($row['instructor_name']); ?></small><br>
+                        <small><em><?php echo $is_past ? 'Finished' : 'Upcoming'; ?></em></small>
+                        <?php if (!$is_past): ?>
+                            <form method="POST">
+                                <input type="hidden" name="delete_session_id" value="<?php echo $row['id']; ?>">
+                                <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to delete this session?');">
+                                    Delete
+                                </button>
+                            </form>
+                        <?php endif; ?>
                     </li>
                 <?php endwhile; ?>
             </ul>

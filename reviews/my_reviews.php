@@ -9,23 +9,23 @@ require_once '../includes/db.php';
 $user_id = $_SESSION['user_id'];
 $message = '';
 
-// ✅ Handle new review submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['instructor_id'], $_POST['rating'], $_POST['comment'])) {
-    $instructor_id = intval($_POST['instructor_id']);
+// ✅ Handle review submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_id'], $_POST['rating'], $_POST['comment'])) {
+    $session_id = intval($_POST['session_id']);
     $rating = intval($_POST['rating']);
     $comment = trim($_POST['comment']);
 
-    // Check if already reviewed
-    $check = $conn->prepare("SELECT id FROM reviews WHERE reviewer_id = ? AND instructor_id = ?");
-    $check->bind_param("ii", $user_id, $instructor_id);
+    // Check for existing review
+    $check = $conn->prepare("SELECT id FROM reviews WHERE reviewer_id = ? AND session_id = ?");
+    $check->bind_param("ii", $user_id, $session_id);
     $check->execute();
     $check->store_result();
 
     if ($check->num_rows > 0) {
-        $message = "You've already reviewed this instructor.";
+        $message = "You've already reviewed this session.";
     } else {
-        $stmt = $conn->prepare("INSERT INTO reviews (reviewer_id, instructor_id, rating, comment) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("iiis", $user_id, $instructor_id, $rating, $comment);
+        $stmt = $conn->prepare("INSERT INTO reviews (reviewer_id, session_id, rating, comment) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iiis", $user_id, $session_id, $rating, $comment);
         if ($stmt->execute()) {
             $message = "Review submitted successfully.";
         } else {
@@ -34,32 +34,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['instructor_id'], $_PO
     }
 }
 
-// ✅ Fetch user's existing reviews
-$my_reviews = $conn->prepare("
-    SELECT r.rating, r.comment, r.created_at, u.name AS instructor_name
+// ✅ Sessions user has attended but not reviewed
+$to_review = $conn->prepare("
+    SELECT ts.id, ts.title, ts.date, ts.time 
+    FROM bookings b
+    JOIN training_sessions ts ON b.session_id = ts.id
+    WHERE b.user_id = ? AND CONCAT(ts.date, ' ', ts.time) < NOW()
+    AND ts.id NOT IN (
+        SELECT session_id FROM reviews WHERE reviewer_id = ?
+    )
+    ORDER BY ts.date DESC
+");
+$to_review->bind_param("ii", $user_id, $user_id);
+$to_review->execute();
+$pending_result = $to_review->get_result();
+
+// ✅ User’s past reviews
+$reviews = $conn->prepare("
+    SELECT r.id, r.rating, r.comment, r.created_at, ts.title, ts.date, ts.time
     FROM reviews r
-    JOIN users u ON r.instructor_id = u.id
+    JOIN training_sessions ts ON r.session_id = ts.id
     WHERE r.reviewer_id = ?
     ORDER BY r.created_at DESC
 ");
-$my_reviews->bind_param("i", $user_id);
-$my_reviews->execute();
-$reviews_result = $my_reviews->get_result();
-
-// ✅ Fetch past sessions for review
-$past_sessions = $conn->prepare("
-    SELECT DISTINCT u.id, u.name
-    FROM bookings b
-    JOIN training_sessions ts ON b.session_id = ts.id
-    JOIN users u ON ts.instructor_id = u.id
-    WHERE b.user_id = ? AND ts.date < CURDATE()
-    AND u.id NOT IN (
-        SELECT instructor_id FROM reviews WHERE reviewer_id = ?
-    )
-");
-$past_sessions->bind_param("ii", $user_id, $user_id);
-$past_sessions->execute();
-$to_review = $past_sessions->get_result();
+$reviews->bind_param("i", $user_id);
+$reviews->execute();
+$reviews_result = $reviews->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -72,53 +72,58 @@ $to_review = $past_sessions->get_result();
 <div class="wrapper">
     <?php include('../includes/header.php'); ?>
     <div class="container">
-        <h2>My Reviews</h2>
-
+        <h2>My Session Reviews</h2>
         <?php if ($message): ?>
             <p style="color: green; font-weight: bold;"><?php echo $message; ?></p>
         <?php endif; ?>
 
-        <!-- ✅ Write new review -->
-        <?php if ($to_review->num_rows > 0): ?>
-            <h3>Leave a New Review</h3>
-            <form method="POST" class="session-form">
-                <label for="instructor_id">Instructor:</label>
-                <select name="instructor_id" required>
-                    <?php while ($row = $to_review->fetch_assoc()): ?>
-                        <option value="<?php echo $row['id']; ?>"><?php echo htmlspecialchars($row['name']); ?></option>
+        <div class="review-flex">
+            <!-- LEFT: Pending Sessions -->
+            <div class="review-panel">
+                <h3>Sessions to Review</h3>
+                <?php if ($pending_result->num_rows > 0): ?>
+                    <?php while ($row = $pending_result->fetch_assoc()): ?>
+                        <div class="session-card">
+                            <strong><?php echo htmlspecialchars($row['title']); ?></strong><br>
+                            <small><?php echo $row['date'] . " at " . substr($row['time'], 0, 5); ?></small>
+                            <form method="POST">
+                                <input type="hidden" name="session_id" value="<?php echo $row['id']; ?>">
+                                <label>Rating (1–5)</label>
+                                <input type="number" name="rating" min="1" max="5" required>
+                                <label>Comment</label>
+                                <textarea name="comment" rows="3" required></textarea>
+                                <button type="submit">Submit Review</button>
+                            </form>
+                        </div>
                     <?php endwhile; ?>
-                </select>
+                <?php else: ?>
+                    <p>No sessions left to review.</p>
+                <?php endif; ?>
+            </div>
 
-                <label for="rating">Rating (1-5):</label>
-                <input type="number" name="rating" min="1" max="5" required>
-
-                <label for="comment">Comment:</label>
-                <textarea name="comment" rows="4" required></textarea>
-
-                <button type="submit">Submit Review</button>
-            </form>
-        <?php else: ?>
-            <p>You have no new instructors to review.</p>
-        <?php endif; ?>
-
-        <hr>
-
-        <!-- ✅ Show submitted reviews -->
-        <h3>Your Submitted Reviews</h3>
-        <?php if ($reviews_result->num_rows > 0): ?>
-            <ul class="session-list">
-                <?php while ($r = $reviews_result->fetch_assoc()): ?>
-                    <li class="session-card">
-                        <strong><?php echo htmlspecialchars($r['instructor_name']); ?></strong><br>
-                        Rating: <?php echo $r['rating']; ?>/5<br>
-                        <em><?php echo nl2br(htmlspecialchars($r['comment'])); ?></em><br>
-                        <small>Submitted on: <?php echo date("F j, Y", strtotime($r['created_at'])); ?></small>
-                    </li>
-                <?php endwhile; ?>
-            </ul>
-        <?php else: ?>
-            <p>You haven’t submitted any reviews yet.</p>
-        <?php endif; ?>
+            <!-- RIGHT: Submitted Reviews -->
+            <div class="review-panel">
+                <h3>Your Reviews</h3>
+                <?php if ($reviews_result->num_rows > 0): ?>
+                    <?php while ($r = $reviews_result->fetch_assoc()): ?>
+                        <div class="session-card">
+                            <strong><?php echo htmlspecialchars($r['title']); ?></strong><br>
+                            <small><?php echo $r['date'] . " at " . substr($r['time'], 0, 5); ?></small>
+                            <div class="review-overlay">
+                                <p>⭐ <?php echo $r['rating']; ?>/5</p>
+                                <em><?php echo nl2br(htmlspecialchars($r['comment'])); ?></em>
+                                <div class="review-actions">
+                                    <span>On <?php echo date('M j, Y', strtotime($r['created_at'])); ?></span>
+                                    <span><a href="#">Edit</a> | <a href="#">Delete</a></span>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <p>You haven’t submitted any reviews yet.</p>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
     <?php include('../includes/footer.php'); ?>
 </div>

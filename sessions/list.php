@@ -6,6 +6,7 @@ require_once '../includes/db.php';
 $sql = "SELECT ts.*, u.name AS instructor_name
         FROM training_sessions ts
         JOIN users u ON ts.instructor_id = u.id
+        WHERE CONCAT(ts.date, ' ', ts.time) >= NOW()
         ORDER BY ts.date ASC, ts.time ASC";
 
 

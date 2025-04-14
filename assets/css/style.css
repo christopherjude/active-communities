@@ -295,5 +295,80 @@ button:hover {
 }
 
 
+/* review */
+.review-flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.review-panel {
+    flex: 1;
+    min-width: 300px;
+    max-height: 600px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.review-panel h3 {
+    margin-bottom: 1rem;
+    color: #111827;
+}
+
+.session-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.review-overlay {
+    background: #eef2ff;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.review-actions {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.review-actions a {
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+.review-actions a:hover {
+    text-decoration: underline;
+}
+
+
+
+/* session */
+.delete-button {
+    background-color: #ef4444; 
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-top: 0.75rem;
+    transition: background-color 0.2s ease;
+}
+
+.delete-button:hover {
+    background-color: #dc2626; 
+}
 
 

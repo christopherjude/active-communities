@@ -44,7 +44,12 @@ $result = $stmt->get_result();
                         <span><?php echo $row['date'] . ' at ' . substr($row['time'], 0, 5); ?></span><br>
                         <span>Instructor: <?php echo htmlspecialchars($row['instructor_name']); ?></span><br>
                         <span>Route: <?php echo htmlspecialchars($row['route']); ?> | Grade: <?php echo htmlspecialchars($row['grade']); ?></span><br>
-                        <small>Status: <?php echo ucfirst(htmlspecialchars($row['status'])); ?></small>
+                        <?php
+                            $datetime = strtotime($row['date'] . ' ' . $row['time']);
+                            $is_completed = $datetime < time();
+                        ?>
+                        <small>Status: <?php echo $is_completed ? 'Completed' : 'Upcoming'; ?></small>
+
                     </li>
                 <?php endwhile; ?>
             </ul>
