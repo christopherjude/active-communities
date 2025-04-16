@@ -32,7 +32,8 @@
 
         <!-- Universal Links -->
         <a href="<?php echo $homeLink; ?>">Home</a>
-        <a href="/active-communities/sessions/list.php">Training Sessions</a>
+        <a href="/active-communities/sessions/public_sessions.php">Training Sessions</a>
+        <a href="/active-communities/tips.php">Riding tips</a>
         <a href="/active-communities/contact/form.php">Contact Us</a>
 
         <!-- Role-Specific Links -->

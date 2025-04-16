@@ -27,7 +27,7 @@ session_start();
 
                         <div class="login-links-split">
                             <a href="register.php">Create an account</a>
-                            <a href="#">Forgot password?</a>
+                            <!-- <a href="#">Forgot password?</a> -->
                         </div>
 
                         <button type="submit">Login</button>

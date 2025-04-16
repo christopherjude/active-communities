@@ -52,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     <div class="login-links-split">
                         <a href="index.php">Already have an account?</a>
-                        <a href="#">Need help?</a>
+                        <!-- <a href="#">Need help?</a> -->
                     </div>
 
                     <button type="submit">Register</button>

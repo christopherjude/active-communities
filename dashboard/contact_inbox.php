@@ -6,11 +6,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'leader') {
 }
 require_once '../includes/db.php';
 
+// ✅ Mark all unread messages as read
+$conn->query("UPDATE contact_forms SET status = 'read' WHERE status = 'unread'");
+
+// Fetch all messages
 $messages = $conn->query("SELECT f.*, u.name, u.email 
                           FROM contact_forms f 
                           JOIN users u ON f.user_id = u.id 
                           ORDER BY f.id DESC");
 ?>
+
 
 <!DOCTYPE html>
 <html>

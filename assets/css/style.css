@@ -372,3 +372,22 @@ button:hover {
 }
 
 
+/* tips */
+.tips-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.tip-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+}
+
+.tip-text {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
